@@ -1,4 +1,71 @@
 // src/models/user.model.js
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       required:
+ *         - email
+ *         - password
+ *         - username
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *           description: The auto-generated id of the user
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: User's email address
+ *         username:
+ *           type: string
+ *           description: User's username
+ *         gender:
+ *           type: string
+ *           enum: [male, female, other]
+ *           description: User's gender
+ *         latitude:
+ *           type: number
+ *           format: float
+ *           description: User's location latitude
+ *         longitude:
+ *           type: number
+ *           format: float
+ *           description: User's location longitude
+ *         city:
+ *           type: string
+ *           description: User's city
+ *         country:
+ *           type: string
+ *           description: User's country
+ *         trust_score:
+ *           type: number
+ *           format: float
+ *           minimum: 0
+ *           maximum: 100
+ *           description: User's trust score
+ *         subscription_tier:
+ *           type: string
+ *           enum: [free, basic, premium, premium_plus]
+ *           description: User's subscription level
+ *         subscription_expiry:
+ *           type: string
+ *           format: date-time
+ *           description: When the subscription expires
+ *         last_active:
+ *           type: string
+ *           format: date-time
+ *           description: When the user was last active
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: When the user was created
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *           description: When the user was last updated
+ */
 const { sequelize, Sequelize } = require("./index");
 const bcrypt = require("bcrypt");
 

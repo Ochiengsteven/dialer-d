@@ -6,6 +6,7 @@ const morgan = require("morgan");
 const { sequelize } = require("./models");
 const healthRoutes = require("./routes/health.routes");
 const authRoutes = require("./routes/auth.routes");
+const { serve, setup } = require("./config/swagger");
 
 // Initialize Express app
 const app = express();
@@ -16,6 +17,9 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// API Documentation
+app.use("/api-docs", serve, setup);
 
 // Routes
 app.use("/api/health", healthRoutes);
