@@ -6,12 +6,12 @@ const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Drunk Dial API",
+      title: "VoiceBridge API",
       version: "1.0.0",
-      description: "API documentation for the Drunk Dial application",
+      description: "API documentation for the VoiceBridge application",
       contact: {
         name: "API Support",
-        email: "support@drunkdial.com",
+        email: "support@voicebridge.com",
       },
     },
     servers: [
