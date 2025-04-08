@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drunk Dial - WebSocket Call Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        h1 {
+            color: #4a4a4a;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #555;
+            font-size: 1.2em;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .error {
+            color: #f44336;
+            margin-top: 10px;
+        }
+        .success {
+            color: #4CAF50;
+            margin-top: 10px;
+        }
+        #callControls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        #callStatus {
+            font-weight: bold;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f0f0f0;
+        }
+        .hidden {
+            display: none;
+        }
+        #localVideo, #remoteVideo {
+            width: 100%;
+            background-color: #000;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .video-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .video-box {
+            flex: 1;
+        }
+        .video-label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        #userList {
+            list-style-type: none;
+            padding: 0;
+        }
+        #userList li {
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #userList li:hover {
+            background-color: #f5f5f5;
+        }
+        #ratingContainer {
+            margin-top: 15px;
+        }
+        .rating {
+            display: flex;
+            gap: 5px;
+        }
+        .rating button {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Drunk Dial - WebSocket Call Test</h1>
+        
+        <!-- Authentication Section -->
+        <div class="section" id="authSection">
+            <h2>Authentication</h2>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" placeholder="Enter your password">
+            </div>
+            <button id="loginBtn">Login</button>
+            <div id="authStatus"></div>
+        </div>
+        
+        <!-- User Info Section -->
+        <div class="section hidden" id="userInfoSection">
+            <h2>User Information</h2>
+            <div id="userInfo"></div>
+            <button id="logoutBtn">Logout</button>
+        </div>
+        
+        <!-- Call Section -->
+        <div class="section hidden" id="callSection">
+            <h2>Make a Call</h2>
+            <div class="form-group">
+                <label for="receiverId">Call User ID:</label>
+                <input type="text" id="receiverId" placeholder="Enter user ID to call">
+            </div>
+            <button id="callBtn">Start Call</button>
+            <div id="callStatus"></div>
+            
+            <div id="callControls" class="hidden">
+                <button id="acceptBtn" class="hidden">Accept Call</button>
+                <button id="rejectBtn" class="hidden">Reject Call</button>
+                <button id="endCallBtn" class="hidden">End Call</button>
+            </div>
+            
+            <div class="video-container hidden" id="videoContainer">
+                <div class="video-box">
+                    <div class="video-label">Local Video</div>
+                    <video id="localVideo" autoplay muted></video>
+                </div>
+                <div class="video-box">
+                    <div class="video-label">Remote Video</div>
+                    <video id="remoteVideo" autoplay></video>
+                </div>
+            </div>
+            
+            <div id="ratingContainer" class="hidden">
+                <h3>Rate the call:</h3>
+                <div class="rating">
+                    <button class="rateBtn" data-rating="1">1</button>
+                    <button class="rateBtn" data-rating="2">2</button>
+                    <button class="rateBtn" data-rating="3">3</button>
+                    <button class="rateBtn" data-rating="4">4</button>
+                    <button class="rateBtn" data-rating="5">5</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Online Users Section -->
+        <div class="section hidden" id="usersSection">
+            <h2>Online Users</h2>
+            <ul id="userList"></ul>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        // DOM Elements
+        const authSection = document.getElementById('authSection');
+        const userInfoSection = document.getElementById('userInfoSection');
+        const callSection = document.getElementById('callSection');
+        const usersSection = document.getElementById('usersSection');
+        
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const authStatus = document.getElementById('authStatus');
+        const userInfo = document.getElementById('userInfo');
+        
+        const receiverIdInput = document.getElementById('receiverId');
+        const callBtn = document.getElementById('callBtn');
+        const callStatus = document.getElementById('callStatus');
+        const callControls = document.getElementById('callControls');
+        const acceptBtn = document.getElementById('acceptBtn');
+        const rejectBtn = document.getElementById('rejectBtn');
+        const endCallBtn = document.getElementById('endCallBtn');
+        
+        const videoContainer = document.getElementById('videoContainer');
+        const localVideo = document.getElementById('localVideo');
+        const remoteVideo = document.getElementById('remoteVideo');
+        
+        const ratingContainer = document.getElementById('ratingContainer');
+        const ratingButtons = document.querySelectorAll('.rateBtn');
+        
+        const userList = document.getElementById('userList');
+        
+        // State variables
+        let currentUser = null;
+        let token = localStorage.getItem('token');
+        let socket = null;
+        let currentCall = null;
+        let localStream = null;
+        let peerConnection = null;
+        
+        // WebRTC configuration
+        const iceServers = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
+        
+        // Check if user is already logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            if (token) {
+                fetchUserProfile();
+            }
+        });
+        
+        // Login handler
+        loginBtn.addEventListener('click', async () => {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            if (!email || !password) {
+                authStatus.innerHTML = '<div class="error">Please enter both email and password</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    token = data.data.token;
+                    localStorage.setItem('token', token);
+                    currentUser = data.data.user;
+                    
+                    showUserInfo();
+                    initializeSocket();
+                } else {
+                    authStatus.innerHTML = `<div class="error">${data.message}</div>`;
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                authStatus.innerHTML = '<div class="error">Failed to login. Please try again.</div>';
+            }
+        });
+        
+        // Logout handler
+        logoutBtn.addEventListener('click', () => {
+            if (socket) {
+                socket.disconnect();
+            }
+            
+            localStorage.removeItem('token');
+            currentUser = null;
+            token = null;
+            
+            authSection.classList.remove('hidden');
+            userInfoSection.classList.add('hidden');
+            callSection.classList.add('hidden');
+            usersSection.classList.add('hidden');
+            
+            emailInput.value = '';
+            passwordInput.value = '';
+            authStatus.innerHTML = '';
+        });
+        
+        // Fetch user profile
+        async function fetchUserProfile() {
+            try {
+                const response = await fetch('/api/auth/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUser = data.data.user;
+                    
+                    showUserInfo();
+                    initializeSocket();
+                } else {
+                    // Token invalid or expired
+                    localStorage.removeItem('token');
+                    token = null;
+                }
+            } catch (error) {
+                console.error('Error fetching profile:', error);
+                localStorage.removeItem('token');
+                token = null;
+            }
+        }
+        
+        // Show user info
+        function showUserInfo() {
+            authSection.classList.add('hidden');
+            userInfoSection.classList.remove('hidden');
+            callSection.classList.remove('hidden');
+            usersSection.classList.remove('hidden');
+            
+            userInfo.innerHTML = `
+                <p><strong>ID:</strong> ${currentUser.id}</p>
+                <p><strong>Username:</strong> ${currentUser.username}</p>
+                <p><strong>Email:</strong> ${currentUser.email}</p>
+                <p><strong>Gender:</strong> ${currentUser.gender || 'Not specified'}</p>
+            `;
+        }
+        
+        // Initialize Socket.IO connection
+        function initializeSocket() {
+            socket = io({
+                auth: {
+                    token: token
+                }
+            });
+            
+            // Connection events
+            socket.on('connect', () => {
+                console.log('Connected to WebSocket server');
+                callStatus.innerHTML = '<div class="success">Connected to server</div>';
+            });
+            
+            socket.on('connect_error', (error) => {
+                console.error('Socket connection error:', error);
+                callStatus.innerHTML = `<div class="error">Connection error: ${error.message}</div>`;
+            });
+            
+            // Call events
+            socket.on('incoming_call', handleIncomingCall);
+            socket.on('call_initiated', handleCallInitiated);
+            socket.on('call_accepted', handleCallAccepted);
+            socket.on('call_rejected', handleCallRejected);
+            socket.on('call_ended', handleCallEnded);
+            socket.on('call_error', handleCallError);
+            
+            // WebRTC signaling
+            socket.on('signal', handleSignal);
+            
+            // User status events
+            socket.on('user_status_change', handleUserStatusChange);
+        }
+        
+        // Start call
+        callBtn.addEventListener('click', () => {
+            const receiverId = receiverIdInput.value.trim();
+            
+            if (!receiverId) {
+                callStatus.innerHTML = '<div class="error">Please enter a user ID to call</div>';
+                return;
+            }
+            
+            // Initialize WebRTC
+            setupWebRTC();
+            
+            // Send call request
+            socket.emit('initiate_call', {
+                receiverId: receiverId
+            });
+            
+            callStatus.innerHTML = '<div class="success">Initiating call...</div>';
+        });
+        
+        // Handle incoming call
+        function handleIncomingCall(data) {
+            currentCall = data;
+            
+            callStatus.innerHTML = `
+                <div class="success">
+                    Incoming call from ${data.caller.username} (${data.caller.id})
+                </div>
+            `;
+            
+            // Show accept/reject buttons
+            callControls.classList.remove('hidden');
+            acceptBtn.classList.remove('hidden');
+            rejectBtn.classList.remove('hidden');
+            
+            // Setup event listeners for accept/reject
+            acceptBtn.onclick = () => acceptCall(data.callId);
+            rejectBtn.onclick = () => rejectCall(data.callId);
+        }
+        
+        // Handle call initiated
+        function handleCallInitiated(data) {
+            currentCall = data;
+            
+            callStatus.innerHTML = `
+                <div class="success">
+                    Calling ${data.receiver.username} (${data.receiver.id})...
+                </div>
+            `;
+            
+            // Show end call button
+            callControls.classList.remove('hidden');
+            endCallBtn.classList.remove('hidden');
+            endCallBtn.onclick = () => endCall(data.callId);
+        }
+        
+        // Accept call
+        async function acceptCall(callId) {
+            try {
+                // Setup WebRTC
+                await setupWebRTC();
+                
+                // Accept the call
+                socket.emit('accept_call', { callId });
+                
+                callStatus.innerHTML = '<div class="success">Call accepted</div>';
+                
+                // Hide accept/reject buttons, show end call button
+                acceptBtn.classList.add('hidden');
+                rejectBtn.classList.add('hidden');
+                endCallBtn.classList.remove('hidden');
+                endCallBtn.onclick = () => endCall(callId);
+                
+                // Show video container
+                videoContainer.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error accepting call:', error);
+                callStatus.innerHTML = `<div class="error">Error accepting call: ${error.message}</div>`;
+            }
+        }
+        
+        // Reject call
+        function rejectCall(callId) {
+            socket.emit('reject_call', { callId });
+            
+            callStatus.innerHTML = '<div class="success">Call rejected</div>';
+            
+            // Hide call controls
+            callControls.classList.add('hidden');
+            acceptBtn.classList.add('hidden');
+            rejectBtn.classList.add('hidden');
+            
+            currentCall = null;
+        }
+        
+        // End call
+        function endCall(callId) {
+            socket.emit('end_call', { callId });
+            
+            callStatus.innerHTML = '<div class="success">Call ended</div>';
+            
+            // Clean up WebRTC
+            cleanupWebRTC();
+            
+            // Hide video container and call controls
+            videoContainer.classList.add('hidden');
+            callControls.classList.add('hidden');
+            endCallBtn.classList.add('hidden');
+            
+            // Show rating container
+            ratingContainer.classList.remove('hidden');
+            
+            // Setup rating buttons
+            ratingButtons.forEach(button => {
+                button.onclick = () => {
+                    const rating = parseInt(button.getAttribute('data-rating'));
+                    rateCall(callId, rating);
+                };
+            });
+        }
+        
+        // Handle call accepted
+        function handleCallAccepted(data) {
+            callStatus.innerHTML = `<div class="success">Call accepted by ${data.receiver.username}</div>`;
+            
+            // Show video container
+            videoContainer.classList.remove('hidden');
+            
+            // Create and send offer
+            createAndSendOffer();
+        }
+        
+        // Handle call rejected
+        function handleCallRejected(data) {
+            callStatus.innerHTML = `<div class="success">Call rejected by ${data.receiver.username}</div>`;
+            
+            // Hide call controls
+            callControls.classList.add('hidden');
+            endCallBtn.classList.add('hidden');
+            
+            // Clean up WebRTC
+            cleanupWebRTC();
+            
+            currentCall = null;
+        }
+        
+        // Handle call ended
+        function handleCallEnded(data) {
+            callStatus.innerHTML = `<div class="success">Call ended. Duration: ${data.duration || 0} seconds</div>`;
+            
+            // Clean up WebRTC
+            cleanupWebRTC();
+            
+            // Hide video container and call controls
+            videoContainer.classList.add('hidden');
+            callControls.classList.add('hidden');
+            acceptBtn.classList.add('hidden');
+            rejectBtn.classList.add('hidden');
+            endCallBtn.classList.add('hidden');
+            
+            // Show rating container if call was active
+            if (currentCall && currentCall.callId === data.callId) {
+                ratingContainer.classList.remove('hidden');
+                
+                // Setup rating buttons
+                ratingButtons.forEach(button => {
+                    button.onclick = () => {
+                        const rating = parseInt(button.getAttribute('data-rating'));
+                        rateCall(data.callId, rating);
+                    };
+                });
+            }
+            
+            currentCall = null;
+        }
+        
+        // Handle call error
+        function handleCallError(data) {
+            callStatus.innerHTML = `<div class="error">Call error: ${data.message}</div>`;
+            
+            // Clean up WebRTC
+            cleanupWebRTC();
+            
+            // Hide video container and call controls
+            videoContainer.classList.add('hidden');
+            callControls.classList.add('hidden');
+            acceptBtn.classList.add('hidden');
+            rejectBtn.classList.add('hidden');
+            endCallBtn.classList.add('hidden');
+            
+            currentCall = null;
+        }
+        
+        // Rate call
+        function rateCall(callId, rating) {
+            socket.emit('rate_call', { callId, rating });
+            
+            callStatus.innerHTML = `<div class="success">Call rated: ${rating}/5</div>`;
+            
+            // Hide rating container
+            ratingContainer.classList.add('hidden');
+        }
+        
+        // Handle user status change
+        function handleUserStatusChange(data) {
+            // Update user list
+            // In a real app, you'd maintain a list of online users
+            console.log('User status change:', data);
+        }
+        
+        // Setup WebRTC
+        async function setupWebRTC() {
+            try {
+                // Get local media stream
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: true
+                });
+                
+                // Display local stream
+                localVideo.srcObject = localStream;
+                
+                // Create peer connection
+                peerConnection = new RTCPeerConnection(iceServers);
+                
+                // Add local tracks to peer connection
+                localStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, localStream);
+                });
+                
+                // Handle ICE candidates
+                peerConnection.onicecandidate = event => {
+                    if (event.candidate && currentCall) {
+                        // Send ICE candidate to peer
+                        socket.emit('signal', {
+                            callId: currentCall.callId,
+                            signal: {
+                                type: 'ice-candidate',
+                                candidate: event.candidate
+                            },
+                            to: currentCall.callerId === currentUser.id ? currentCall.receiver.id : currentCall.caller.id
+                        });
+                    }
+                };
+                
+                // Handle remote track
+                peerConnection.ontrack = event => {
+                    // Display remote stream
+                    remoteVideo.srcObject = event.streams[0];
+                };
+                
+                return true;
+            } catch (error) {
+                console.error('Error setting up WebRTC:', error);
+                callStatus.innerHTML = `<div class="error">Error accessing media devices: ${error.message}</div>`;
+                throw error;
+            }
+        }
+        
+        // Create and send offer
+        async function createAndSendOffer() {
+            try {
+                // Create offer
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                
+                // Send offer to peer
+                socket.emit('signal', {
+                    callId: currentCall.callId,
+                    signal: {
+                        type: 'offer',
+                        sdp: peerConnection.localDescription
+                    },
+                    to: currentCall.receiver.id
+                });
+            } catch (error) {
+                console.error('Error creating offer:', error);
+                callStatus.innerHTML = `<div class="error">Error creating offer: ${error.message}</div>`;
+            }
+        }
+        
+        // Handle signal
+        async function handleSignal(data) {
+            try {
+                const { callId, signal, from } = data;
+                
+                if (!peerConnection) {
+                    await setupWebRTC();
+                }
+                
+                if (signal.type === 'offer') {
+                    // Set remote description
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+                    
+                    // Create answer
+                    const answer = await peerConnection.createAnswer();
+                    await peerConnection.setLocalDescription(answer);
+                    
+                    // Send answer to peer
+                    socket.emit('signal', {
+                        callId,
+                        signal: {
+                            type: 'answer',
+                            sdp: peerConnection.localDescription
+                        },
+                        to: from
+                    });
+                } else if (signal.type === 'answer') {
+                    // Set remote description
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+                } else if (signal.type === 'ice-candidate') {
+                    // Add ICE candidate
+                    await peerConnection.addIceCandidate(new RTCIceCandidate(signal.candidate));
+                }
+            } catch (error) {
+                console.error('Error handling signal:', error);
+                callStatus.innerHTML = `<div class="error">Error handling signal: ${error.message}</div>`;
+            }
+        }
+        
+        // Clean up WebRTC
+        function cleanupWebRTC() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+            
+            localVideo.srcObject = null;
+            remoteVideo.srcObject = null;
+        }
+    </script>
+</body>
+</html>
