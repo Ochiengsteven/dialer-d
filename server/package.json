@@ -1,7 +1,7 @@
 {
-  "name": "drunk-dial-server",
+  "name": "voicebridge-server",
   "version": "1.0.0",
-  "description": "Server for the DrunkDial application",
+  "description": "Server for the VoiceBridge application",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",

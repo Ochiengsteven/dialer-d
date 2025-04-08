@@ -11,12 +11,12 @@ const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Drunk Dial API",
+      title: "VoiceBridge API",
       version: "1.0.0",
-      description: "API documentation for the Drunk Dial application",
+      description: "API documentation for the VoiceBridge application",
       contact: {
         name: "API Support",
-        email: "support@drunkdial.com",
+        email: "support@voicebridge.com",
       },
     },
     servers: [
@@ -59,7 +59,7 @@ const htmlContent = `
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Drunk Dial API Documentation</title>
+  <title>VoiceBridge API Documentation</title>
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css" />
   <style>
     body {
